@@ -32,6 +32,8 @@ begin
 
   uTools.APP_PATH := System.SysUtils.ExtractFilePath(ParamStr(0));
   FormSplash.AddTextln(Concat('程序所在路径：', uTools.APP_PATH));
+  FormSplash.AddTextln(Concat('系统屏幕分辨率：[', IntToStr(Screen.Width), 'px] * [',
+    IntToStr(Screen.Height), 'px]'));
 
   Application.CreateForm(TDataModuleNonvisual, ModuleNonvisual);
   Application.CreateForm(TFormMain, FormMain);

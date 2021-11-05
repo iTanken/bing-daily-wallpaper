@@ -11,7 +11,7 @@ uses
 
   Vcl.ComCtrls, Vcl.Controls, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Forms,
   Vcl.Graphics, Vcl.Imaging.jpeg, Vcl.Imaging.pngimage, Vcl.StdCtrls,
-  Vcl.Imaging.GIFImg;
+  Vcl.Imaging.GIFImg, System.Actions, Vcl.ActnList, Vcl.Menus;
 
 type
   TFormMain = class(TForm)
@@ -21,8 +21,37 @@ type
     loading: TProgressBar;
     StatusBarBtm: TStatusBar;
     LabelCopyrightLink: TLabel;
+
+    PopupMenuImage: TPopupMenu;
+    N1_SET: TMenuItem;
+    N2_SAVE: TMenuItem;
+    N3_REFRESH: TMenuItem;
+    N4_FIRST: TMenuItem;
+    N5_LAST: TMenuItem;
+    N6_ABOUT: TMenuItem;
+    N7_CLOSE: TMenuItem;
+
+    ActionListPopup: TActionList;
+    ActionSetWallpaper: TAction;
+    ActionSaveImage: TAction;
+    ActionRefreshImage: TAction;
+    ActionFirst: TAction;
+    ActionLast: TAction;
+    ActionAbout: TAction;
+    ActionExit: TAction;
+    N8_EXPLORER: TMenuItem;
+    ActionExplorer: TAction;
+
     procedure FormCreate(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+
+    procedure ActionSetWallpaperExecute(Sender: TObject);
+    procedure ActionSaveImageExecute(Sender: TObject);
+    procedure ActionRefreshImageExecute(Sender: TObject);
+    procedure ActionFirstExecute(Sender: TObject);
+    procedure ActionLastExecute(Sender: TObject);
+    procedure ActionAboutExecute(Sender: TObject);
+    procedure ActionExitExecute(Sender: TObject);
 
     procedure ImageCurrentMouseEnter(Sender: TObject);
     procedure ImageCurrentMouseLeave(Sender: TObject);
@@ -37,9 +66,11 @@ type
     procedure StatusBarBtmDrawPanel(StatusBar: TStatusBar; Panel: TStatusPanel;
       const Rect: TRect);
 
-    procedure LabelCopyrightClick(Sender: TObject);
+    procedure ImageCurrentDblClick(Sender: TObject);
     procedure ImageCurrentMouseMove(Sender: TObject; Shift: TShiftState;
       X, Y: Integer);
+    procedure FormShortCut(var Msg: TWMKey; var Handled: Boolean);
+    procedure ActionExplorerExecute(Sender: TObject);
   private
     { Private declarations }
     procedure LoadStart();
@@ -53,11 +84,6 @@ type
       : TJSONArray;
     function GetImageJSON(index: Integer = 0): TJSONObject;
     procedure ShowImage();
-
-    // 注册快捷键
-    procedure RegHotKey();
-    // 响应快捷键消息
-    procedure HotKeyDown(var msg: Tmessage); message WM_HOTKEY;
 
   var
     AllImages: TJSONArray; // 所有图片信息
@@ -76,29 +102,30 @@ type
 
   var
     ImageCurrentDate: String;
+    PopupMenuX, PopupMenuY: Integer;
   end;
 
 var
   FormMain: TFormMain;
 
-procedure LoadingTimer(hWnd: THandle; msg: Word; idEvent: Word;
+procedure LoadingTimer(handle: THandle; Msg: Word; idEvent: Word;
   dwTime: LongWord); stdcall;
-procedure LoadedTimer(hWnd: THandle; msg: Word; idEvent: Word;
+procedure LoadedTimer(handle: THandle; Msg: Word; idEvent: Word;
+  dwTime: LongWord); stdcall;
+procedure PopupMenuTimer(handle: THandle; Msg: Word; idEvent: Word;
   dwTime: LongWord); stdcall;
 
 implementation
 
 {$R *.dfm}
 
-uses NonVisualModule, uTools, uFormSplash;
+uses NonVisualModule, uTools, uFormSplash, ABOUT;
 
 procedure TFormMain.FormCreate(Sender: TObject);
 // 主窗体创建事件
 begin
   self.InitCaption := self.Caption;
-
-  FormSplash.AddTextln('注册程序功能快捷键 ...');
-  RegHotKey();
+  self.PopupMenuImage.AutoPopup := False;
 
   self.ShowNowTime();
   FormSplash.AddTextln('请求必应服务器获取壁纸数据 ...');
@@ -108,14 +135,14 @@ end;
 procedure TFormMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 // 关闭确认
 var
-  msg: PWideChar;
+  Msg: PWideChar;
 begin
   CanClose := False;
-  msg := Concat('是否关闭到系统托盘？', uTools.BR, '取消将直接退出程序！');
-  if MessageBox(self.Handle, msg, '关闭确认', MB_OKCANCEL + MB_ICONQUESTION) = mrOK
+  Msg := Concat('是否关闭到系统托盘？', uTools.BR, '取消将直接退出程序！');
+  if Application.MessageBox(Msg, '关闭确认', MB_OKCANCEL + MB_ICONQUESTION) = mrOK
   then
   begin
-    FormMain.Hide;
+    self.Hide;
     ModuleNonVisual.TrayIconMain.Visible := True;
   end
   else
@@ -158,18 +185,27 @@ begin
       on e: Exception do
       begin
         // 初始化加载失败
-        uTools.AlertError(self.Handle, Concat('初始化加载失败！', uTools.BR,
-          e.Message));
+        uTools.AlertError(Concat('初始化加载失败！', uTools.BR, e.Message));
         Exit;
       end;
     end;
   finally
     data.Free;
-    self.ImageCount := self.AllImages.Count;
     self.LoadEnd();
-    // 显示第一张壁纸图片
-    self.ImageIndex := 0;
-    self.ShowImage();
+    if self.AllImages = nil then
+    begin
+      self.ImageCount := 0;
+    end
+    else
+    begin
+      self.ImageCount := self.AllImages.Count;
+      self.Caption := Concat(self.InitCaption, ' （',
+        GetImageDate(self.GetImageJSON(self.ImageCount - 1)), ' 至 ',
+        GetImageDate(self.GetImageJSON(0)), '）');
+      // 显示第一张壁纸图片
+      self.ImageIndex := 0;
+      self.ShowImage();
+    end;
   end;
 end;
 
@@ -197,30 +233,34 @@ begin
       // 定时更新进度
       for i := Min to Max do
       begin
-        StepIt();
+        SetTimer(0, 0, 100, @LoadingTimer);
         Application.ProcessMessages;
-        // SetTimer(0, 0, 1, @LoadingTimer);
       end;
     except
       on e: Exception do
       begin
-        AlertWarn(self.Handle, Concat('进度条进度更新失败！', uTools.BR, e.Message));
+        AlertWarn(Concat('进度条进度更新失败！', uTools.BR, e.Message));
       end;
     end;
   end;
 end;
 
-procedure LoadingTimer(hWnd: THandle; msg: Word; idEvent: Word;
+procedure LoadingTimer(handle: THandle; Msg: Word; idEvent: Word;
   dwTime: LongWord); stdcall;
 // SetTimer 定时无阻塞延迟执行回调
 begin
   try
-    if FormMain.loading.Visible and
-      (FormMain.loading.Position < FormMain.loading.Max) then
-    begin
-      FormMain.loading.StepIt(); // 更新进度条进度
+    try
+      if FormMain.loading.Visible and
+        (FormMain.loading.Position < FormMain.loading.Max) then
+      begin
+        FormMain.loading.StepIt(); // 更新进度条进度
+        Application.ProcessMessages;
+      end;
+    except
     end;
-  except
+  finally
+    KillTimer(handle, idEvent); // 关闭定时器
   end;
 end;
 
@@ -240,7 +280,7 @@ begin
   except
     on e: Exception do
     begin
-      AlertWarn(self.Handle, Concat('进度条进度更新失败！', uTools.BR, e.Message));
+      AlertWarn(Concat('进度条进度更新失败！', uTools.BR, e.Message));
     end;
   end;
 end;
@@ -252,14 +292,16 @@ begin
   Application.ProcessMessages;
   // 延迟 2 毫秒隐藏进度条
   SetTimer(0, 0, 200, @LoadedTimer);
+  Application.ProcessMessages;
 end;
 
-procedure LoadedTimer(hWnd: THandle; msg: Word; idEvent: Word;
+procedure LoadedTimer(handle: THandle; Msg: Word; idEvent: Word;
   dwTime: LongWord); stdcall;
 // SetTimer 定时无阻塞延迟执行回调
 begin
   FormMain.loading.Visible := False;
-  KillTimer(hWnd, idEvent); // 关闭定时器
+
+  KillTimer(handle, idEvent); // 关闭定时器
 end;
 
 procedure TFormMain.StatusBarBtmDrawPanel(StatusBar: TStatusBar;
@@ -276,12 +318,6 @@ begin
   StatusBar.Canvas.TextRect(Rect, Rect.Left, Rect.Top, Panel.Text);
 end;
 
-procedure TFormMain.LabelCopyrightClick(Sender: TObject);
-// 点击版权信息打开版权链接
-begin
-  uTools.OpenLink(self.CopyrightLink);
-end;
-
 function TFormMain.ShowNowTime: String;
 // 在状态栏显示当前时间
 begin
@@ -294,7 +330,6 @@ function TFormMain.GetImages(data: TJSONObject; idx: Integer = 0;
 // 请求 Bing HPImageArchive API 获取图片信息 JSON 数组
 var
   ApiResult: TMemoryStream;
-  ApiResSize: Int64;
   ApiResPtr: PUTF8Char;
   HttpCode: Integer;
   JsonStr, Code: String;
@@ -312,32 +347,21 @@ begin
       self.Caption := Concat(self.InitCaption, ' - HTTP ', Code);
       if HttpCode >= 400 then
       begin
-        AlertError(self.Handle, Concat('请求失败：HTTP ERROR ', Code));
+        AlertError(Concat('请求失败：HTTP ERROR ', Code));
         Exit;
       end;
 
-      ApiResSize := ApiResult.Size;
-      if ApiResSize = 0 then
-      begin
-        AlertError(self.Handle, '请求失败：返回数据为空！');
-        Exit;
-      end;
-
-      ApiResPtr := AllocMem(ApiResSize); // 申请内存
-      ApiResult.Position := 0; // 设置要读取的内容的起始位置
-      ApiResult.ReadBuffer(ApiResPtr^, ApiResSize); // 读取流中的数据
-
-      JsonStr := String(UTF8ToAnsi(ApiResPtr));
+      JsonStr := uTools.StreamToStr(ApiResult, TEncoding.UTF8);
       if JsonStr = '' then
       begin
-        AlertError(self.Handle, '请求失败：读取数据为空！');
+        AlertError('请求失败：读取数据为空！');
         Exit;
       end;
 
       data := TJSONObject.ParseJSONValue(Trim(JsonStr)) as TJSONObject;
       if (data = nil) or (data.Count = 0) or (data.Values['images'] = nil) then
       begin
-        AlertError(self.Handle, '请求失败：数据解析失败，请稍后再试！');
+        AlertError('请求失败：数据解析失败，请稍后再试！');
         Exit;
       end;
 
@@ -345,7 +369,7 @@ begin
     except
       on e: Exception do
       begin
-        AlertError(self.Handle, Concat('请求服务器获取图片信息失败！', uTools.BR, e.Message));
+        AlertError(Concat('请求服务器获取图片信息失败！', uTools.BR, e.Message));
       end;
     end;
   finally
@@ -372,7 +396,7 @@ begin
   except
     on e: Exception do
     begin
-      AlertError(self.Handle, Concat('获取指定图片信息失败！', uTools.BR, e.Message));
+      AlertError(Concat('获取指定图片信息失败！', uTools.BR, e.Message));
     end;
   end;
 end;
@@ -396,7 +420,7 @@ begin
   except
     on e: Exception do
     begin
-      AlertError(self.Handle, Concat('获取图片日期信息失败！', uTools.BR, e.Message));
+      AlertError(Concat('获取图片日期信息失败！', uTools.BR, e.Message));
     end;
   end;
 end;
@@ -418,7 +442,7 @@ begin
   except
     on e: Exception do
     begin
-      AlertError(self.Handle, Concat('图片保存失败！', uTools.BR, e.Message));
+      AlertError(Concat('图片保存失败！', uTools.BR, e.Message));
     end;
   end;
 end;
@@ -463,7 +487,7 @@ begin
     except
       on e: Exception do
       begin
-        AlertError(self.Handle, Concat('图片加载失败！', uTools.BR, e.Message));
+        AlertError(Concat('图片加载失败！', uTools.BR, e.Message));
       end;
     end;
   finally
@@ -486,14 +510,33 @@ begin
   self.ShowImage();
 end;
 
+procedure TFormMain.ImageCurrentDblClick(Sender: TObject);
+// 双击图片打开必应搜索链接
+begin
+  uTools.OpenLink(self.CopyrightLink);
+end;
+
 procedure TFormMain.ImageCurrentMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 // 鼠标右键图片弹出菜单
 begin
   if Button = mbRight then
   begin
-    ModuleNonVisual.PopupMenuImage.Popup(Left + X + 5, Top + Y + 29);
+    self.PopupMenuX := Left + X + 5;
+    self.PopupMenuY := Top + Y + 29;
+    // ModuleNonVisual.PopupMenuImage.Popup(PopupMenuX, PopupMenuY);
+    SetTimer(0, 0, 0, @PopupMenuTimer);
+    Application.ProcessMessages;
   end;
+end;
+
+procedure PopupMenuTimer(handle: THandle; Msg: Word; idEvent: Word;
+  dwTime: LongWord); stdcall;
+// SetTimer 定时无阻塞延迟执行回调
+begin
+  FormMain.PopupMenuImage.Popup(FormMain.PopupMenuX, FormMain.PopupMenuY);
+
+  KillTimer(handle, idEvent); // 关闭定时器
 end;
 
 procedure TFormMain.ImageCurrentMouseEnter(Sender: TObject);
@@ -532,13 +575,18 @@ end;
 procedure TFormMain.ImagePrevClick(Sender: TObject);
 // 左箭头点击事件
 begin
+  if self.ImageCount = 0 then
+  begin
+    Exit;
+  end;
+
   if self.IsLastImage() then
   begin
     // 已经是最后一张
     self.ImageIndex := self.ImageCount - 1;
 
-    uTools.AlertWarn(self.Handle, Concat('已到达最后一张图片！', uTools.BR, '最后一张图片日期为：',
-      uTools.BR, '【', self.GetImageDate(nil), '】'));
+    uTools.AlertWarn(Concat('已到达最后一张图片！', uTools.BR, '最后一张图片日期为：', uTools.BR,
+      '【', self.GetImageDate(nil), '】'));
     Exit;
   end;
 
@@ -549,12 +597,17 @@ end;
 procedure TFormMain.ImageNextClick(Sender: TObject);
 // 右箭头点击事件
 begin
+  if self.ImageCount = 0 then
+  begin
+    Exit;
+  end;
+
   if self.IsFirstImage() then
   begin
     // 已经是第一张
     self.ImageIndex := 0;
-    uTools.AlertWarn(self.Handle, Concat('已到达第一张图片！', uTools.BR, '最新图片的日期为：',
-      uTools.BR, '【', self.GetImageDate(nil), '】'));
+    uTools.AlertWarn(Concat('已到达第一张图片！', uTools.BR, '最新图片的日期为：', uTools.BR, '【',
+      self.GetImageDate(nil), '】'));
     Exit;
   end;
 
@@ -574,97 +627,111 @@ begin
   Result := self.ImageIndex >= (self.ImageCount - 1);
 end;
 
-procedure TFormMain.RegHotKey;
-// 注册快捷键
+procedure TFormMain.ActionSetWallpaperExecute(Sender: TObject);
+// 1. 右键菜单动作：设置桌面壁纸
 var
-  HotKeyID: Integer;
+  imagePath: String;
+  callState: Boolean;
 begin
-  // 注册快捷键，减 $C000 保证取值范围的限制
-  HotKeyID := GlobalAddAtom(PChar('ImagePrevClick')) - $C000;
-  RegisterHotKey(self.Handle, HotKeyID, 0, VK_LEFT);
+  imagePath := self.SaveCurrentImage();
 
-  HotKeyID := GlobalAddAtom(PChar('ImageNextClick')) - $C000;
-  RegisterHotKey(self.Handle, HotKeyID, 0, VK_RIGHT);
+  // 调用 Windows API 设置桌面壁纸
+  callState := SystemParametersInfo(SPI_SETDESKWALLPAPER, 1, PChar(imagePath),
+    SPIF_UPDATEINIFILE);
 
-  HotKeyID := GlobalAddAtom(PChar('ActionSetWallpaperExecute')) - $C000;
-  RegisterHotKey(self.Handle, HotKeyID, MOD_CONTROL, 68);
-
-  HotKeyID := GlobalAddAtom(PChar('ActionSaveImageExecute')) - $C000;
-  RegisterHotKey(self.Handle, HotKeyID, MOD_CONTROL, 83);
-
-  HotKeyID := GlobalAddAtom(PChar('InitLoad')) - $C000;
-  RegisterHotKey(self.Handle, HotKeyID, MOD_CONTROL, 82);
-
-  HotKeyID := GlobalAddAtom(PChar('ShowFirstImage')) - $C000;
-  RegisterHotKey(self.Handle, HotKeyID, MOD_ALT, VK_F1);
-
-  HotKeyID := GlobalAddAtom(PChar('ShowLastImage')) - $C000;
-  RegisterHotKey(self.Handle, HotKeyID, MOD_ALT, VK_F2);
-
-  HotKeyID := GlobalAddAtom(PChar('ActionAboutExecute')) - $C000;
-  RegisterHotKey(self.Handle, HotKeyID, MOD_CONTROL, 65);
-
-  HotKeyID := GlobalAddAtom(PChar('Close')) - $C000;
-  RegisterHotKey(self.Handle, HotKeyID, MOD_CONTROL, 87);
+  if callState then
+  begin
+    AlertInfo('桌面壁纸设置成功！');
+    Exit;
+  end;
+  AlertWarn('桌面壁纸设置失败！');
 end;
 
-procedure TFormMain.HotKeyDown(var msg: Tmessage);
+procedure TFormMain.ActionSaveImageExecute(Sender: TObject);
+// 2. 右键菜单动作：保存当前图片
+begin
+  ModuleNonVisual.SavePictureDialogCurr.Title :=
+    Concat('保存当前图片：', self.ImageCurrentDate);
+  ModuleNonVisual.SavePictureDialogCurr.Filter := '图片文件(*.jpg)|*.jpg'; // 文件类型过滤
+  ModuleNonVisual.SavePictureDialogCurr.DefaultExt := EXT_JPG; // 自动添加扩展名
+  ModuleNonVisual.SavePictureDialogCurr.FileName := self.ImageCurrentDate;
+
+  if not ModuleNonVisual.SavePictureDialogCurr.Execute then
+  begin
+    // 取消保存
+    AlertWarn('已取消保存当前图片！');
+    Exit;
+  end;
+
+  // 保存图片
+  self.ImageCurrent.Picture.SavetoFile
+    (ModuleNonVisual.SavePictureDialogCurr.FileName);
+  AlertInfo('当前图片保存成功！');
+end;
+
+procedure TFormMain.ActionExplorerExecute(Sender: TObject);
+// 3. 右键菜单动作：浏览
+var
+  imagePath: String;
+begin
+  imagePath := Concat(uTools.APP_PATH, 'images\');
+  if DirectoryExists(imagePath) then
+  begin
+    uTools.OpenLink(imagePath);
+  end
+  else
+  begin
+    uTools.OpenLink(uTools.APP_PATH);
+  end;
+end;
+
+procedure TFormMain.ActionRefreshImageExecute(Sender: TObject);
+// 4. 右键菜单动作：刷新、重载
+begin
+  self.InitLoad;
+end;
+
+procedure TFormMain.ActionFirstExecute(Sender: TObject);
+// 5. 右键菜单动作：首页
+begin
+  self.ShowFirstImage();
+end;
+
+procedure TFormMain.ActionLastExecute(Sender: TObject);
+// 6. 右键菜单动作：尾页
+begin
+  self.ShowLastImage();
+end;
+
+procedure TFormMain.ActionAboutExecute(Sender: TObject);
+// 7. 右键菜单动作：关于
+begin
+  ABOUT.Show(self);
+end;
+
+procedure TFormMain.ActionExitExecute(Sender: TObject);
+// 8. 右键菜单动作：退出程序
+begin
+  self.Close;
+end;
+
+procedure TFormMain.FormShortCut(var Msg: TWMKey; var Handled: Boolean);
 // 监听快捷键
 begin
   // ← 左方向键：上一张
-  if (msg.LParamLo = 0) AND (msg.LParamHi = VK_LEFT) then
+  if Msg.CharCode = VK_LEFT then
   begin
     self.ImagePrevClick(self);
+    Handled := True;
     Exit;
   end;
 
   // → 右方向键：下一张
-  if (msg.LParamLo = 0) AND (msg.LParamHi = VK_RIGHT) then
+  if Msg.CharCode = VK_RIGHT then
   begin
     self.ImageNextClick(self);
+    Handled := True;
     Exit;
-  end;
-
-  // Ctrl + D : 设置桌面壁纸
-  if (msg.LParamLo = MOD_CONTROL) AND (msg.LParamHi = 68) then
-  begin
-    ModuleNonVisual.ActionSetWallpaperExecute(self);
-    Exit;
-  end;
-  // Ctrl + S : 保存当前图片
-  if (msg.LParamLo = MOD_CONTROL) AND (msg.LParamHi = 83) then
-  begin
-    ModuleNonVisual.ActionSaveImageExecute(self);
-    Exit;
-  end;
-  // Ctrl + R : 刷新（重新请求 API 获取数据）
-  if (msg.LParamLo = MOD_CONTROL) AND (msg.LParamHi = 82) then
-  begin
-    self.InitLoad;
-    Exit;
-  end;
-  // Alt + F1 : 首页
-  if (msg.LParamLo = MOD_ALT) AND (msg.LParamHi = VK_F1) then
-  begin
-    self.ShowFirstImage();
-    Exit;
-  end;
-  // Alt + F2 : 尾页
-  if (msg.LParamLo = MOD_ALT) AND (msg.LParamHi = VK_F2) then
-  begin
-    self.ShowLastImage();
-    Exit;
-  end;
-  // Ctrl + A : 关于
-  if (msg.LParamLo = MOD_CONTROL) AND (msg.LParamHi = 65) then
-  begin
-    ModuleNonVisual.ActionAboutExecute(self);
-    Exit;
-  end;
-  // Ctrl + W : 退出
-  if (msg.LParamLo = MOD_CONTROL) AND (msg.LParamHi = 87) then
-  begin
-    self.Close;
   end;
 end;
 

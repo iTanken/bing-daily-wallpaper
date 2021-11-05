@@ -16,10 +16,12 @@ type
     Comments: TLabel;
     OKButton: TButton;
     LabelBingApi: TLabel;
+
+    procedure FormCreate(Sender: TObject);
     procedure OKButtonClick(Sender: TObject);
     procedure ProgramIconClick(Sender: TObject);
     procedure LabelBingApiClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -58,13 +60,24 @@ procedure TAboutBox.OKButtonClick(Sender: TObject);
 // 点击确定按钮关闭关于弹窗
 begin
   self.Close;
-  self.Free;
+end;
+
+procedure TAboutBox.FormClose(Sender: TObject; var Action: TCloseAction);
+// 关闭后释放
+begin
+  FreeAndNil(AboutBox);
 end;
 
 procedure Show(AOwner: TComponent);
 // 显示关于信息弹窗
 begin
-  AboutBox := About.TAboutBox.Create(AOwner);
+  if AboutBox <> nil then
+  begin
+    AboutBox.Visible := True;
+    Exit;
+  end;
+
+  AboutBox := TAboutBox.Create(AOwner);
   AboutBox.Visible := True;
 end;
 

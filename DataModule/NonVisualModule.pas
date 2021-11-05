@@ -10,7 +10,7 @@ uses
   IdIOHandler, IdIOHandlerSocket, IdIOHandlerStack, IdSSL, IdSSLOpenSSL,
   IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient, IdHTTP,
 
-  Vcl.ExtCtrls, Vcl.Forms, Vcl.Menus, Vcl.ActnList, Vcl.Dialogs, Vcl.ExtDlgs;
+  Vcl.ExtCtrls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtDlgs, Vcl.Menus;
 
 type
   TDataModuleNonvisual = class(TDataModule)
@@ -18,35 +18,21 @@ type
     BingApiIdSSLIOHandlerSocketOpenSSL: TIdSSLIOHandlerSocketOpenSSL;
     BingImageIdHTTP: TIdHTTP;
     BingImageIdSSLIOHandlerSocketOpenSSL: TIdSSLIOHandlerSocketOpenSSL;
+
     TimerShowNow: TTimer;
-    PopupMenuImage: TPopupMenu;
-    N1: TMenuItem;
-    N2: TMenuItem;
-    N3: TMenuItem;
-    N4: TMenuItem;
-    N5: TMenuItem;
-    ActionListPopup: TActionList;
-    ActionSetWallpaper: TAction;
-    ActionRefreshImage: TAction;
-    ActionSaveImage: TAction;
-    ActionAbout: TAction;
-    ActionExit: TAction;
     TrayIconMain: TTrayIcon;
     SavePictureDialogCurr: TSavePictureDialog;
-    ActionLast: TAction;
-    ActionFirst: TAction;
-    N6: TMenuItem;
-    N7: TMenuItem;
-    procedure TimerShowNowTimer(Sender: TObject);
+    PopupMenuIcon: TPopupMenu;
+    N1_SHOW: TMenuItem;
+    N2_ABOUT: TMenuItem;
+    N3_CLOSE: TMenuItem;
+
     procedure DataModuleCreate(Sender: TObject);
-    procedure ActionExitExecute(Sender: TObject);
+    procedure TimerShowNowTimer(Sender: TObject);
     procedure TrayIconMainClick(Sender: TObject);
-    procedure ActionSetWallpaperExecute(Sender: TObject);
-    procedure ActionSaveImageExecute(Sender: TObject);
-    procedure ActionRefreshImageExecute(Sender: TObject);
-    procedure ActionAboutExecute(Sender: TObject);
-    procedure ActionLastExecute(Sender: TObject);
-    procedure ActionFirstExecute(Sender: TObject);
+    procedure N3_CLOSEClick(Sender: TObject);
+    procedure N1_SHOWClick(Sender: TObject);
+    procedure N2_ABOUTClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -68,7 +54,7 @@ uses uMain, uTools, uFormSplash, ABOUT;
 procedure TDataModuleNonvisual.DataModuleCreate(Sender: TObject);
 begin
   // 释放依赖 dll 资源
-  FormSplash.AddTextln('释放依赖 DLL 资源 ...');
+  // FormSplash.AddTextln('释放依赖 DLL 资源 ...');
 
   uTools.ExtractRes(SysInit.HInstance, 'libeay32', 'RC_DLL',
     Concat(uTools.APP_PATH, 'libeay32.dll'));
@@ -84,11 +70,9 @@ begin
   System.SysUtils.FormatSettings.ShortTimeFormat := 'HH:mm';
 
   // 设置 idHTTP User-Agent
-  FormSplash.AddTextln('设置 HTTP 请求 User-Agent ...');
+  FormSplash.AddTextln('设置 HTTP 请求用户代理字符串 ...');
   BingApiIdHTTP.Request.UserAgent := uTools.DEF_UA;
   BingImageIdHTTP.Request.UserAgent := uTools.DEF_UA;
-
-  self.PopupMenuImage.AutoPopup := False;
 end;
 
 procedure TDataModuleNonvisual.TimerShowNowTimer(Sender: TObject);
@@ -106,77 +90,22 @@ begin
   SetForegroundWindow(FormMain.Handle);
 end;
 
-procedure TDataModuleNonvisual.ActionSetWallpaperExecute(Sender: TObject);
-// 右键菜单动作：设置桌面壁纸
-var
-  imagePath: String;
-  callState: Boolean;
+procedure TDataModuleNonvisual.N1_SHOWClick(Sender: TObject);
+// 托盘图标右键菜单动作：还原显示
 begin
-  imagePath := FormMain.SaveCurrentImage();
-
-  // 调用 Windows API 设置桌面壁纸
-  callState := SystemParametersInfo(SPI_SETDESKWALLPAPER, 1, PChar(imagePath),
-    SPIF_UPDATEINIFILE);
-
-  if callState then
-  begin
-    AlertInfo(FormMain.Handle, '桌面壁纸设置成功！');
-    Exit;
-  end;
-  AlertWarn(FormMain.Handle, '桌面壁纸设置失败！');
+  self.TrayIconMainClick(Sender);
 end;
 
-procedure TDataModuleNonvisual.ActionSaveImageExecute(Sender: TObject);
-// 右键菜单动作：保存当前图片
-var
-  imageName: string;
+procedure TDataModuleNonvisual.N2_ABOUTClick(Sender: TObject);
+// 托盘图标右键菜单动作：关于
 begin
-  imageName := FormMain.ImageCurrentDate;
-  self.SavePictureDialogCurr.Title := Concat('保存当前图片：', imageName);
-  self.SavePictureDialogCurr.Filter := '图片文件(*.jpg)|*.jpg'; // 文件类型过滤
-  self.SavePictureDialogCurr.DefaultExt := EXT_JPG; // 自动添加扩展名
-  self.SavePictureDialogCurr.FileName := imageName;
-
-  if not self.SavePictureDialogCurr.Execute then
-  begin
-    // 取消保存
-    AlertWarn(FormMain.Handle, '已取消保存当前图片！');
-    Exit;
-  end;
-
-  // 保存图片
-  FormMain.ImageCurrent.Picture.SaveToFile(self.SavePictureDialogCurr.FileName);
-  AlertInfo(FormMain.Handle, '当前图片保存成功！');
+  ABOUT.Show(self);
 end;
 
-procedure TDataModuleNonvisual.ActionRefreshImageExecute(Sender: TObject);
-// 右键菜单动作：刷新、重载
+procedure TDataModuleNonvisual.N3_CLOSEClick(Sender: TObject);
+// 托盘图标右键菜单动作：退出系统
 begin
-  FormMain.InitLoad;
-end;
-
-procedure TDataModuleNonvisual.ActionFirstExecute(Sender: TObject);
-// 右键菜单动作：首页
-begin
-  FormMain.ShowFirstImage();
-end;
-
-procedure TDataModuleNonvisual.ActionLastExecute(Sender: TObject);
-// 右键菜单动作：尾页
-begin
-  FormMain.ShowLastImage();
-end;
-
-procedure TDataModuleNonvisual.ActionAboutExecute(Sender: TObject);
-// 右键菜单动作：关于
-begin
-  ABOUT.Show(FormMain);
-end;
-
-procedure TDataModuleNonvisual.ActionExitExecute(Sender: TObject);
-// 右键菜单动作：退出程序
-begin
-  FormMain.Close;
+  Application.Terminate;
 end;
 
 end.

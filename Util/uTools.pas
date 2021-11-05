@@ -9,12 +9,12 @@ uses
 
   Vcl.Forms;
 
-procedure AlertInfo(handle: HWND; msg: string);
-procedure AlertWarn(handle: HWND; msg: string);
-procedure AlertError(handle: HWND; msg: string);
-
+procedure AlertInfo(msg: string);
+procedure AlertWarn(msg: string);
+procedure AlertError(msg: string);
 procedure OpenLink(link: string);
 
+function StreamToStr(const Stream: TStream; const Encoding: TEncoding): string;
 function ExtractRes(Instance: NativeUInt;
   ResName, ResType, ResNewName: string): Boolean;
 function GetApplicationVersion: String;
@@ -33,28 +33,48 @@ implementation
 
 uses uMain;
 
-procedure AlertInfo(handle: HWND; msg: string);
+procedure AlertInfo(msg: string);
 // 提示信息框
 begin
-  MessageBox(handle, PWideChar(msg), '提示', MB_OK + MB_ICONINFORMATION);
+  Application.MessageBox(PWideChar(msg), '提示', MB_OK + MB_ICONINFORMATION +
+    MB_SYSTEMMODAL);
+
+  Application.ProcessMessages;
 end;
 
-procedure AlertWarn(handle: HWND; msg: string);
+procedure AlertWarn(msg: string);
 // 警告信息框
 begin
-  MessageBox(handle, PWideChar(msg), '警告', MB_OK + MB_ICONWARNING);
+  Application.MessageBox(PWideChar(msg), '警告', MB_OK + MB_ICONWARNING +
+    MB_SYSTEMMODAL);
+
+  Application.ProcessMessages;
 end;
 
-procedure AlertError(handle: HWND; msg: string);
+procedure AlertError(msg: string);
 // 错误信息框
 begin
-  MessageBox(handle, PWideChar(msg), '错误', MB_OK + MB_ICONERROR);
+  Application.MessageBox(PWideChar(msg), '错误', MB_OK + MB_ICONERROR +
+    MB_SYSTEMMODAL);
+
+  Application.ProcessMessages;
 end;
 
 procedure OpenLink(link: string);
-// 使用默认浏览器打开链接地址
+// 使用默认程序打开链接或文件地址
 begin
   ShellExecute(0, 'open', PChar(link), nil, nil, SW_SHOWNORMAL);
+end;
+
+function StreamToStr(const Stream: TStream; const Encoding: TEncoding): string;
+// 数据流转字符串
+var
+  StringBytes: TBytes;
+begin
+  Stream.Position := 0;
+  SetLength(StringBytes, Stream.Size);
+  Stream.ReadBuffer(StringBytes, Stream.Size);
+  Result := Encoding.GetString(StringBytes);
 end;
 
 function ExtractRes(Instance: THandle;
@@ -90,8 +110,7 @@ begin
     on e: Exception do
     begin
       Result := false;
-      AlertError(FormMain.handle, Concat('资源 [', ResName, '] 释放失败！', BR,
-        e.Message));
+      AlertError(Concat('资源 [', ResName, '] 释放失败！', BR, e.Message));
     end;
   end;
 end;
