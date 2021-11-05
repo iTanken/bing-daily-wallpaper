@@ -1,0 +1,41 @@
+
+bin
+__history
+__recovery
+
+### Windows
+# Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.exe
+
+# Windows shortcuts
+*.lnk
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+### macOS template
+.AppleDouble
+.LSOverride
+.DS_Store
+
+### VisualStudioCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
