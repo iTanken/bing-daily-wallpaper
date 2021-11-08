@@ -3,7 +3,7 @@ unit uMain;
 interface
 
 uses
-  Winapi.Messages, Winapi.ShellAPI, Winapi.Windows,
+  Winapi.Messages, Winapi.Windows,
 
   System.Classes, System.Generics.Collections,
   System.JSON, System.JSON.Builders, System.JSON.Types, System.JSON.Writers,
@@ -87,7 +87,6 @@ type
 
   var
     AllImages: TJSONArray; // 所有图片信息
-    ImageCount, ImageIndex: Integer; // 图片总数和当前图片索引
     InitCaption, CopyrightInfo, CopyrightLink: String; // 必应图片版权信息和链接
     StatusDrawRect: TRect;
 
@@ -102,7 +101,8 @@ type
 
   var
     ImageCurrentDate: String;
-    PopupMenuX, PopupMenuY: Integer;
+    ImageCount, ImageIndex: Integer; // 图片总数和当前图片索引
+    PopupMenuX, PopupMenuY: Integer; // 图片鼠标右键菜单坐标
   end;
 
 var

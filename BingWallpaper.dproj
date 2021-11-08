@@ -64,7 +64,7 @@
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Keys>CompanyName=;FileDescription=必应每日桌面壁纸设置工具;FileVersion=2021.11.6.0;InternalName=必应每日壁纸;LegalCopyright=CC BY-SA 4.0;LegalTrademarks=;OriginalFilename=BingWallpaper.exe;ProgramID=cn.liutianqi.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=必应每日桌面壁纸设置工具</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=必应每日桌面壁纸设置工具;FileVersion=2021.11.8.0;InternalName=必应每日壁纸;LegalCopyright=CC BY-SA 4.0;LegalTrademarks=;OriginalFilename=BingWallpaper.exe;ProgramID=cn.liutianqi.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=必应每日桌面壁纸设置工具</VerInfo_Keys>
         <VerInfo_Locale>2052</VerInfo_Locale>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <Icon_MainIcon>BingWallpaper_Icon.ico</Icon_MainIcon>
@@ -74,7 +74,7 @@
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <VerInfo_MajorVer>2021</VerInfo_MajorVer>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
-        <VerInfo_Release>6</VerInfo_Release>
+        <VerInfo_Release>8</VerInfo_Release>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <AppExecutionLevel>requireAdministrator</AppExecutionLevel>
     </PropertyGroup>
@@ -97,14 +97,15 @@
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <Icon_MainIcon>BingWallpaper_Icon.ico</Icon_MainIcon>
-        <VerInfo_Keys>CompanyName=;FileDescription=必应每日桌面壁纸设置工具;FileVersion=2021.11.6.3;InternalName=必应每日壁纸;LegalCopyright=CC BY-SA 4.0;LegalTrademarks=;OriginalFilename=BingWallpaper.exe;ProgramID=cn.liutianqi.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=必应每日桌面壁纸设置工具</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=必应每日桌面壁纸设置工具;FileVersion=2021.11.8.2;InternalName=必应每日壁纸;LegalCopyright=CC BY-SA 4.0;LegalTrademarks=;OriginalFilename=BingWallpaper.exe;ProgramID=cn.liutianqi.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=必应每日桌面壁纸设置工具</VerInfo_Keys>
         <VerInfo_MajorVer>2021</VerInfo_MajorVer>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
-        <VerInfo_Release>6</VerInfo_Release>
+        <VerInfo_Release>8</VerInfo_Release>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <UWP_DelphiLogo44>Res\icon\icon_70.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>Res\icon\icon_150.png</UWP_DelphiLogo150>
-        <VerInfo_Build>3</VerInfo_Build>
+        <AppExecutionLevel>requireAdministrator</AppExecutionLevel>
+        <VerInfo_Build>2</VerInfo_Build>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -119,13 +120,11 @@
         <Icon_MainIcon>BingWallpaper_Icon.ico</Icon_MainIcon>
         <VerInfo_MajorVer>2021</VerInfo_MajorVer>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
-        <VerInfo_Release>6</VerInfo_Release>
+        <VerInfo_Release>8</VerInfo_Release>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <AppExecutionLevel>requireAdministrator</AppExecutionLevel>
-        <VerInfo_Keys>CompanyName=;FileDescription=必应每日桌面壁纸设置工具;FileVersion=2021.11.6.3;InternalName=必应每日壁纸;LegalCopyright=CC BY-SA 4.0;LegalTrademarks=;OriginalFilename=BingWallpaper.exe;ProgramID=cn.liutianqi.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=必应每日桌面壁纸设置工具</VerInfo_Keys>
         <UWP_DelphiLogo44>Res\icon\icon_70.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>Res\icon\icon_150.png</UWP_DelphiLogo150>
-        <VerInfo_Build>3</VerInfo_Build>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -141,11 +140,9 @@
         <DCCReference Include="Util\uTools.pas"/>
         <DCCReference Include="Form\ABOUT.pas">
             <Form>AboutBox</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Form\uFormSplash.pas">
             <Form>FormSplash</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
@@ -1023,9 +1020,9 @@
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="OSX64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="OSXARM64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Android64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="OSXARM64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Linux64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
