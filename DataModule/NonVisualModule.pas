@@ -16,8 +16,6 @@ type
   TDataModuleNonvisual = class(TDataModule)
     BingApiIdHTTP: TIdHTTP;
     BingApiIdSSLIOHandlerSocketOpenSSL: TIdSSLIOHandlerSocketOpenSSL;
-    BingImageIdHTTP: TIdHTTP;
-    BingImageIdSSLIOHandlerSocketOpenSSL: TIdSSLIOHandlerSocketOpenSSL;
 
     TimerShowNow: TTimer;
     TrayIconMain: TTrayIcon;
@@ -30,9 +28,9 @@ type
     procedure DataModuleCreate(Sender: TObject);
     procedure TimerShowNowTimer(Sender: TObject);
     procedure TrayIconMainClick(Sender: TObject);
-    procedure N3_CLOSEClick(Sender: TObject);
     procedure N1_SHOWClick(Sender: TObject);
     procedure N2_ABOUTClick(Sender: TObject);
+    procedure N3_CLOSEClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -72,7 +70,6 @@ begin
   // 设置 idHTTP User-Agent
   FormSplash.AddTextln('设置 HTTP 请求用户代理字符串 ...');
   BingApiIdHTTP.Request.UserAgent := uTools.DEF_UA;
-  BingImageIdHTTP.Request.UserAgent := uTools.DEF_UA;
 end;
 
 procedure TDataModuleNonvisual.TimerShowNowTimer(Sender: TObject);

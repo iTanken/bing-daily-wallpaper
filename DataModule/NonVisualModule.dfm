@@ -1,6 +1,6 @@
 object DataModuleNonvisual: TDataModuleNonvisual
   OnCreate = DataModuleCreate
-  Height = 500
+  Height = 338
   Width = 700
   PixelsPerInch = 96
   object BingApiIdHTTP: TIdHTTP
@@ -30,39 +30,13 @@ object DataModuleNonvisual: TDataModuleNonvisual
     Left = 96
     Top = 64
   end
-  object BingImageIdHTTP: TIdHTTP
-    IOHandler = BingImageIdSSLIOHandlerSocketOpenSSL
-    ProxyParams.BasicAuthentication = False
-    ProxyParams.ProxyPort = 0
-    Request.ContentLength = -1
-    Request.ContentRangeEnd = -1
-    Request.ContentRangeStart = -1
-    Request.ContentRangeInstanceLength = -1
-    Request.Accept = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-    Request.BasicAuthentication = False
-    Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
-    Request.Ranges.Units = 'bytes'
-    Request.Ranges = <>
-    HTTPOptions = [hoForceEncodeParams]
-    Left = 96
-    Top = 136
-  end
-  object BingImageIdSSLIOHandlerSocketOpenSSL: TIdSSLIOHandlerSocketOpenSSL
-    MaxLineAction = maException
-    Port = 0
-    DefaultPort = 0
-    SSLOptions.Mode = sslmUnassigned
-    SSLOptions.VerifyMode = []
-    SSLOptions.VerifyDepth = 0
-    Left = 96
-    Top = 192
-  end
   object TimerShowNow: TTimer
     OnTimer = TimerShowNowTimer
     Left = 600
     Top = 8
   end
   object TrayIconMain: TTrayIcon
+    Hint = #27599#26085#24517#24212#26700#38754#22721#32440
     PopupMenu = PopupMenuIcon
     OnClick = TrayIconMainClick
     Left = 360

@@ -477,7 +477,7 @@ begin
 
       // 获取壁纸文件流
       imageStream := TMemoryStream.Create();
-      ModuleNonVisual.BingImageIdHTTP.Get
+      ModuleNonVisual.BingApiIdHTTP.Get
         (Concat(API_BASIC, Image.GetValue('url').Value), imageStream);
       self.LoadProgress(70);
       // 显示壁纸文件

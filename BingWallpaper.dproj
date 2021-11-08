@@ -97,7 +97,7 @@
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <Icon_MainIcon>BingWallpaper_Icon.ico</Icon_MainIcon>
-        <VerInfo_Keys>CompanyName=;FileDescription=必应每日桌面壁纸设置工具;FileVersion=2021.11.8.2;InternalName=必应每日壁纸;LegalCopyright=CC BY-SA 4.0;LegalTrademarks=;OriginalFilename=BingWallpaper.exe;ProgramID=cn.liutianqi.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=必应每日桌面壁纸设置工具</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=必应每日桌面壁纸设置工具;FileVersion=2021.11.8.6;InternalName=必应每日壁纸;LegalCopyright=CC BY-SA 4.0;LegalTrademarks=;OriginalFilename=BingWallpaper.exe;ProgramID=cn.liutianqi.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=必应每日桌面壁纸设置工具</VerInfo_Keys>
         <VerInfo_MajorVer>2021</VerInfo_MajorVer>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
         <VerInfo_Release>8</VerInfo_Release>
@@ -105,7 +105,7 @@
         <UWP_DelphiLogo44>Res\icon\icon_70.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>Res\icon\icon_150.png</UWP_DelphiLogo150>
         <AppExecutionLevel>requireAdministrator</AppExecutionLevel>
-        <VerInfo_Build>2</VerInfo_Build>
+        <VerInfo_Build>6</VerInfo_Build>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -125,6 +125,8 @@
         <AppExecutionLevel>requireAdministrator</AppExecutionLevel>
         <UWP_DelphiLogo44>Res\icon\icon_70.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>Res\icon\icon_150.png</UWP_DelphiLogo150>
+        <VerInfo_Build>2</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=必应每日桌面壁纸设置工具;FileVersion=2021.11.8.2;InternalName=必应每日壁纸;LegalCopyright=CC BY-SA 4.0;LegalTrademarks=;OriginalFilename=BingWallpaper.exe;ProgramID=cn.liutianqi.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=必应每日桌面壁纸设置工具</VerInfo_Keys>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -1019,9 +1021,9 @@
                 </DeployClass>
                 <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="OSX64" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="Android64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="OSXARM64" Name="$(PROJECTNAME).app"/>
-                <ProjectRoot Platform="Android64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Linux64" Name="$(PROJECTNAME)"/>
