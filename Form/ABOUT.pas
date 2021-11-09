@@ -53,7 +53,7 @@ end;
 procedure TAboutBox.ProgramIconClick(Sender: TObject);
 // 点击图标在浏览器中访问指定地址
 begin
-  uTools.OpenLink('http://192.168.200.39:999/liutianqi');
+  uTools.OpenLink('https://192.168.200.39:999/liutianqi');
 end;
 
 procedure TAboutBox.OKButtonClick(Sender: TObject);

@@ -37,7 +37,7 @@ procedure AlertInfo(msg: string);
 // 提示信息框
 begin
   Application.MessageBox(PWideChar(msg), '提示', MB_OK + MB_ICONINFORMATION +
-    MB_SYSTEMMODAL);
+    MB_TOPMOST);
 
   Application.ProcessMessages;
 end;
@@ -46,7 +46,7 @@ procedure AlertWarn(msg: string);
 // 警告信息框
 begin
   Application.MessageBox(PWideChar(msg), '警告', MB_OK + MB_ICONWARNING +
-    MB_SYSTEMMODAL);
+    MB_TOPMOST);
 
   Application.ProcessMessages;
 end;
@@ -55,7 +55,7 @@ procedure AlertError(msg: string);
 // 错误信息框
 begin
   Application.MessageBox(PWideChar(msg), '错误', MB_OK + MB_ICONERROR +
-    MB_SYSTEMMODAL);
+    MB_TOPMOST);
 
   Application.ProcessMessages;
 end;
