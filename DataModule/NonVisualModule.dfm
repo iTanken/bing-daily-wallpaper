@@ -11,9 +11,14 @@ object DataModuleNonvisual: TDataModuleNonvisual
     Request.ContentRangeEnd = -1
     Request.ContentRangeStart = -1
     Request.ContentRangeInstanceLength = -1
-    Request.Accept = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    Request.Accept = 
+      'application/json,text/html,application/xhtml+xml,application/xml' +
+      ';q=0.9,*/*;q=0.8'
     Request.BasicAuthentication = False
-    Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
+    Request.UserAgent = 
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KH' +
+      'TML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.4' +
+      '2'
     Request.Ranges.Units = 'bytes'
     Request.Ranges = <>
     HTTPOptions = [hoForceEncodeParams]
@@ -24,6 +29,7 @@ object DataModuleNonvisual: TDataModuleNonvisual
     MaxLineAction = maException
     Port = 0
     DefaultPort = 0
+    SSLOptions.SSLVersions = [sslvTLSv1, sslvTLSv1_1, sslvTLSv1_2]
     SSLOptions.Mode = sslmUnassigned
     SSLOptions.VerifyMode = []
     SSLOptions.VerifyDepth = 0

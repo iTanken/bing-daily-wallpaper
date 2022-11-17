@@ -329,18 +329,18 @@ function TFormMain.GetImages(data: TJSONObject; idx: Integer = 0;
   n: Integer = 7): TJSONArray;
 // 请求 Bing HPImageArchive API 获取图片信息 JSON 数组
 var
+  ApiUrl, JsonStr, Code: String;
   ApiResult: TMemoryStream;
   ApiResPtr: PUTF8Char;
   HttpCode: Integer;
-  JsonStr, Code: String;
 begin
   Result := nil;
   ApiResPtr := nil;
   try
     try
       ApiResult := TMemoryStream.Create();
-      ModuleNonVisual.BingApiIdHTTP.Get(Concat(API_BASIC, API_PATH, '&idx=',
-        IntToStr(idx), '&n=', IntToStr(n)), ApiResult);
+      ApiUrl := Concat(API_BASIC, API_PATH, '&idx=', IntToStr(idx), '&n=', IntToStr(n));
+      ModuleNonVisual.BingApiIdHTTP.Get(ApiUrl, ApiResult);
 
       HttpCode := ModuleNonVisual.BingApiIdHTTP.ResponseCode;
       Code := IntToStr(HttpCode);
@@ -374,6 +374,7 @@ begin
     end;
   finally
     JsonStr := '';
+    ModuleNonVisual.BingApiIdHTTP.Disconnect;
     if ApiResPtr <> nil then
     begin
       FreeMem(ApiResPtr);
@@ -452,6 +453,7 @@ procedure TFormMain.ShowImage();
 var
   Image: TJSONObject;
   imageStream: TMemoryStream;
+  imageUrl: String;
 begin
   self.LoadStart();
   try
@@ -477,8 +479,8 @@ begin
 
       // 获取壁纸文件流
       imageStream := TMemoryStream.Create();
-      ModuleNonVisual.BingApiIdHTTP.Get
-        (Concat(API_BASIC, Image.GetValue('url').Value), imageStream);
+      imageUrl := Concat(API_BASIC, Image.GetValue('url').Value);
+      ModuleNonVisual.BingApiIdHTTP.Get(imageUrl, imageStream);
       self.LoadProgress(70);
       // 显示壁纸文件
       imageStream.Position := 0;
@@ -491,6 +493,7 @@ begin
       end;
     end;
   finally
+    ModuleNonVisual.BingApiIdHTTP.Disconnect;
     FreeAndNil(imageStream);
     self.LoadEnd();
   end;
